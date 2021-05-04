@@ -39,7 +39,8 @@ type config struct {
 }
 
 type Config interface {
-	GetTokens(tenantID string) (TokenConfig, error)
+	GetTokenConfig(tenantID string) (TokenConfig, error)
+	UpdateTokenConfig(tenantID string, config TokenConfig) error
 }
 
 func newConfigAPI(c *client.Client) Config {
@@ -48,8 +49,13 @@ func newConfigAPI(c *client.Client) Config {
 	}
 }
 
-func (c *config) GetTokens(tenantID string) (TokenConfig, error) {
+func (c *config) GetTokenConfig(tenantID string) (TokenConfig, error) {
 	tokenConfig := TokenConfig{}
 	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/tokens", url.QueryEscape(tenantID)), &tokenConfig)
 	return tokenConfig, err
+}
+
+func (c *config) UpdateTokenConfig(tenantID string, config TokenConfig) error {
+	_, err := c.client.Put(fmt.Sprintf("/management/v4/%s/config/tokens", url.QueryEscape(tenantID)), config, nil)
+	return err
 }
