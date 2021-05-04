@@ -16,9 +16,10 @@ const ErrCodeAPICreation = "APICreationError"
 
 // AppIDServiceAPI is the IBM AppID client
 type AppIDServiceAPI interface {
+	Config() Config
 }
 
-type scService struct {
+type appIDService struct {
 	*client.Client
 }
 
@@ -56,7 +57,11 @@ func New(sess *session.Session) (AppIDServiceAPI, error) {
 		config.Endpoint = &ep
 	}
 
-	return &scService{
+	return &appIDService{
 		Client: client.New(config, bluemix.AppIDService, tokenRefresher),
 	}, nil
+}
+
+func (a *appIDService) Config() Config {
+	return newConfigAPI(a.Client)
 }
