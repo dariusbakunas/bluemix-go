@@ -14,9 +14,9 @@ type Group struct {
 	Id      string  `json:"id"`
 	Count   int     `json:"count"`
 	Members Members `json:"members"`
-	Memory  Memory `json:"memory"`
-	Cpu     Cpu    `json:"cpu"`
-	Disk    Disk   `json:"disk"`
+	Memory  Memory  `json:"memory"`
+	Cpu     Cpu     `json:"cpu"`
+	Disk    Disk    `json:"disk"`
 }
 
 type Members struct {
@@ -128,5 +128,3 @@ func (r *groups) UpdateGroup(icdId string, groupId string, groupReq GroupReq) (T
 	}
 	return taskResult.Task, nil
 }
-
-
