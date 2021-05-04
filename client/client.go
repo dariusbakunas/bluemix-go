@@ -300,6 +300,9 @@ const (
 func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) gohttp.Header {
 	h := gohttp.Header{}
 	switch serviceName {
+	case bluemix.AppIDService:
+		h.Set(userAgentHeader, http.UserAgent())
+		h.Set(authorizationHeader, c.IAMAccessToken)
 	case bluemix.MccpService, bluemix.AccountService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.UAAAccessToken)
@@ -342,7 +345,6 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.FunctionsService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)
-
 	default:
 		log.Println("Unknown service - No auth headers set")
 	}
