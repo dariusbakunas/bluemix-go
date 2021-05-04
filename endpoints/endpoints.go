@@ -11,6 +11,7 @@ import (
 //EndpointLocator ...
 type EndpointLocator interface {
 	AccountManagementEndpoint() (string, error)
+	AppIDEndpoint() (string, error)
 	CertificateManagerEndpoint() (string, error)
 	CFAPIEndpoint() (string, error)
 	ContainerEndpoint() (string, error)
@@ -120,6 +121,15 @@ func (e *endpointLocator) AccountManagementEndpoint() (string, error) {
 		return contructEndpoint(fmt.Sprintf("private.%s.accounts", r), cloudEndpoint), nil
 	}
 	return contructEndpoint("accounts", cloudEndpoint), nil
+}
+
+func (e *endpointLocator) AppIDEndpoint() (string, error) {
+	endpoint := helpers.EnvFallBack([]string{"IBMCLOUD_APPID_API_ENDPOINT"}, "")
+	if endpoint != "" {
+		return endpoint, nil
+	}
+
+	return contructEndpoint(fmt.Sprintf("%s.appid", e.region), cloudEndpoint), nil
 }
 
 func (e *endpointLocator) CertificateManagerEndpoint() (string, error) {
