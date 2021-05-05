@@ -17,6 +17,7 @@ const ErrCodeAPICreation = "APICreationError"
 // AppIDServiceAPI is the IBM AppID client
 type AppIDServiceAPI interface {
 	Config() Config
+	Roles() Roles
 }
 
 type appIDService struct {
@@ -64,4 +65,8 @@ func New(sess *session.Session) (AppIDServiceAPI, error) {
 
 func (a *appIDService) Config() Config {
 	return newConfigAPI(a.Client)
+}
+
+func (a *appIDService) Roles() Roles {
+	return newRolesAPI(a.Client)
 }
