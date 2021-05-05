@@ -22,6 +22,10 @@ type Applications interface {
 	ListScopes(tenantID string, clientID string) ([]string, error)
 	// Update update an application registered with the App ID instance, currently only name can be changed
 	Update(tenantID string, clientID string, name string) (Application, error)
+	// UpdateScopes update the scopes for a registered application. Important: Removing a scope from an array deletes it from any roles that it is associated with and the action cannot be undone
+	UpdateScopes(tenantID string, clientID string, scopes []string) ([]string, error)
+	// UpdateRoles update the roles for a registered application
+	UpdateRoles(tenantID string, clientID string, roleIDs []string) ([]Role, error)
 }
 
 type applications struct {
@@ -116,4 +120,42 @@ func (a *applications) Update(tenantID string, clientID string, name string) (Ap
 
 	_, err := a.client.Put(fmt.Sprintf("/management/v4/%s/applications/%s", url.QueryEscape(tenantID), url.QueryEscape(clientID)), input, &response)
 	return response, err
+}
+
+// UpdateScopes ...
+func (a *applications) UpdateScopes(tenantID string, clientID string, scopes []string) ([]string, error) {
+	input := struct {
+		Scopes []string `json:"scopes"`
+	}{
+		Scopes: scopes,
+	}
+
+	response := struct {
+		Scopes []string `json:"scopes"`
+	}{}
+
+	_, err := a.client.Put(fmt.Sprintf("/management/v4/%s/applications/%s/scopes", url.QueryEscape(tenantID), url.QueryEscape(clientID)), input, &response)
+	return response.Scopes, err
+}
+
+// UpdateRoles ...
+func (a *applications) UpdateRoles(tenantID string, clientID string, roleIDs []string) ([]Role, error) {
+	input := struct {
+		Roles struct {
+			IDS []string `json:"ids"`
+		} `json:"roles"`
+	}{
+		Roles: struct {
+			IDS []string `json:"ids"`
+		}{
+			IDS: roleIDs,
+		},
+	}
+
+	response := struct {
+		Roles []Role `json:"roles"`
+	}{}
+
+	_, err := a.client.Put(fmt.Sprintf("/management/v4/%s/applications/%s/roles", url.QueryEscape(tenantID), url.QueryEscape(clientID)), input, &response)
+	return response.Roles, err
 }
