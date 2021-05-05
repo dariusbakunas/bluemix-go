@@ -35,7 +35,7 @@ type TokenConfig struct {
 	AccessTokenClaims []TokenClaim          `json:"accessTokenClaims,omitempty"`
 }
 
-type UsersProfileSettings struct {
+type UsersProfileConfig struct {
 	IsActive bool `json:"isActive"`
 }
 
@@ -74,7 +74,7 @@ type PasswordRegex struct {
 	ErrorMessage string `json:"error_message"`
 }
 
-type SendgridMailerSettings struct {
+type SendgridMailerConfig struct {
 	ApiKey string `json:"apiKey"`
 }
 
@@ -85,47 +85,86 @@ type CustomMailerAuth struct {
 	Password string `json:"password"`
 }
 
-type CustomMailerSettings struct {
+type CustomMailerConfig struct {
 	URL  string           `json:"url"`
 	Auth CustomMailerAuth `json:"authorization"`
 }
 
-type EmailDispatcherSettings struct {
-	Provider string                  `json:"provider"`
-	SendGrid *SendgridMailerSettings `json:"sendgrid,omitempty"`
-	Custom   *CustomMailerSettings   `json:"custom,omitempty"`
+type EmailDispatcherConfig struct {
+	Provider string                `json:"provider"`
+	SendGrid *SendgridMailerConfig `json:"sendgrid,omitempty"`
+	Custom   *CustomMailerConfig   `json:"custom,omitempty"`
 }
 
-type APMSettings struct {
-	Enabled       bool `json:"enabled"`
-	PasswordReuse struct {
-		Enabled bool `json:"enabled"`
-		Config  struct {
-			MaxReuse int `json:"maxPasswordReuse"`
-		} `json:"config,omitempty"`
-	} `json:"passwordReuse"`
+type PasswordReuseConfig struct {
+	Enabled bool `json:"enabled"`
+	Config  struct {
+		MaxReuse int `json:"maxPasswordReuse"`
+	} `json:"config,omitempty"`
+}
+
+type PasswordExpirationConfig struct {
+	Enabled bool `json:"enabled"`
+	Config  struct {
+		DaysToExpire int `json:"daysToExpire"`
+	} `json:"config,omitempty"`
+}
+
+type LockoutPolicyConfig struct {
+	Enabled bool `json:"enabled"`
+	Config  struct {
+		LockoutTime   int `json:"lockOutTimeSec"`
+		NumOfAttempts int `json:"numOfAttempts"`
+	} `json:"config,omitempty"`
+}
+
+type MinPasswordChangeIntervalConfig struct {
+	Enabled bool `json:"enabled"`
+	Config  struct {
+		MinHours int `json:"minHoursToChangePassword"`
+	} `json:"config,omitempty"`
+}
+
+type APMConfig struct {
+	Enabled                     bool                `json:"enabled"`
+	PasswordReuse               PasswordReuseConfig `json:"passwordReuse"`
 	PreventPasswordWithUsername struct {
 		Enabled bool `json:"enabled"`
 	} `json:"preventPasswordWithUsername"`
-	PasswordExpiration struct {
-		Enabled bool `json:"enabled"`
-		Config  struct {
-			DaysToExpire int `json:"daysToExpire"`
-		} `json:"config,omitempty"`
-	} `json:"passwordExpiration"`
-	LockoutPolicy struct {
-		Enabled bool `json:"enabled"`
-		Config  struct {
-			LockoutTime   int `json:"lockOutTimeSec"`
-			NumOfAttempts int `json:"numOfAttempts"`
-		} `json:"config,omitempty"`
-	} `json:"lockOutPolicy"`
-	MinPasswordChangeInterval struct {
-		Enabled bool `json:"enabled"`
-		Config  struct {
-			MinHours int `json:"minHoursToChangePassword"`
-		} `json:"config,omitempty"`
-	} `json:"minPasswordChangeInterval,omitempty"`
+	PasswordExpiration        PasswordExpirationConfig        `json:"passwordExpiration"`
+	LockoutPolicy             LockoutPolicyConfig             `json:"lockOutPolicy"`
+	MinPasswordChangeInterval MinPasswordChangeIntervalConfig `json:"minPasswordChangeInterval,omitempty"`
+}
+
+type AuditStatus struct {
+	IsActive bool `json:"isActive"`
+}
+
+type SMSMFAConfig struct {
+	Key      string `json:"key"`
+	Secret   string `json:"secret"`
+	From     string `json:"from"`
+	Provider string `json:"provider"`
+}
+
+type MFAChannel struct {
+	IsActive bool          `json:"isActive"`
+	Type     string        `json:"type"`
+	Config   *SMSMFAConfig `json:"config,omitempty"`
+}
+
+type MFAExtensionConfig struct {
+	URL     string            `json:"url"`
+	Headers map[string]string `json:"headers"`
+}
+
+type MFAExtension struct {
+	IsActive bool                `json:"isActive"`
+	Config   *MFAExtensionConfig `json:"config,omitempty"`
+}
+
+type MFAConfig struct {
+	IsActive bool `json:"isActive"`
 }
 
 type config struct {
@@ -135,14 +174,24 @@ type config struct {
 type Config interface {
 	// GetActionURL returns the custom url to redirect to when action is executed, supported actions: on_user_verified, on_reset_password
 	GetActionURL(tenantID string, action string) (string, error)
-	// GetAPMSettings returns the configuration of the advanced password management
-	GetAPMSettings(tenantID string) (APMSettings, error)
-	// GetEmailDispatcherSettings returns configuration of email dispatcher that is used by Cloud Directory when sending emails
-	GetEmailDispatcherSettings(tenantID string) (EmailDispatcherSettings, error)
+	// GetAPMConfig returns the configuration of the advanced password management
+	GetAPMConfig(tenantID string) (APMConfig, error)
+	// GetAuditStatus returns tenant audit status
+	GetAuditStatus(tenantID string) (AuditStatus, error)
+	// GetEmailDispatcherConfig returns configuration of email dispatcher that is used by Cloud Directory when sending emails
+	GetEmailDispatcherConfig(tenantID string) (EmailDispatcherConfig, error)
 	// GetEmailSenderDetails returns the sender details configuration that is used by Cloud Directory when sending emails
 	GetEmailSenderDetails(tenantID string) (SenderDetails, error)
 	// GetEmailTemplate returns the content of a custom email template or the default template in case it wasn't customized
 	GetEmailTemplate(tenantID string, templateName string, language string) (EmailTemplate, error)
+	// GetMFAChannel returns a specific MFA channel registered with the App ID Instance, supported provider values: email, nexmo
+	GetMFAChannel(tenantID string, provider string) (MFAChannel, error)
+	// GetMFAChannels returns all MFA channels registered with the App ID Instance.
+	GetMFAChannels(tenantID string) ([]MFAChannel, error)
+	// GetMFAExtension returns registered extension's configuration for an instance of App ID, supported names: premfa, postmfa
+	GetMFAExtension(tenantID string, name string) (MFAExtension, error)
+	// GetMFAConfig returns MFA configuration registered with the App ID Instance.
+	GetMFAConfig(tenantID string) (MFAConfig, error)
 	// GetPasswordRegex returns the regular expression used by App ID for password strength validation
 	GetPasswordRegex(tenantID string) (PasswordRegex, error)
 	// GetRedirectUris returns the list of the redirect URIs that can be used as callbacks of App ID authentication flow
@@ -157,8 +206,8 @@ type Config interface {
 	GetThemeText(tenantID string) (ThemeText, error)
 	// GetTokenConfig returns the token configuration
 	GetTokenConfig(tenantID string) (TokenConfig, error)
-	// GetUsersProfileSettings returns user profile settings
-	GetUsersProfileSettings(tenantID string) (UsersProfileSettings, error)
+	// GetUsersProfileConfig returns user profile configuration
+	GetUsersProfileConfig(tenantID string) (UsersProfileConfig, error)
 	// GetWidgetLogoURI returns the link to the custom logo image of the login widget
 	GetWidgetLogoURI(tenantID string) (string, error)
 	// UpdateTokenConfig updates the token configuration
@@ -193,11 +242,11 @@ func (c *config) GetRedirectUris(tenantID string) ([]string, error) {
 	return response.RedirectUris, nil
 }
 
-// GetUsersProfileSettings ...
-func (c *config) GetUsersProfileSettings(tenantID string) (UsersProfileSettings, error) {
-	settings := UsersProfileSettings{}
-	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/users_profile", url.QueryEscape(tenantID)), &settings)
-	return settings, err
+// GetUsersProfileConfig ...
+func (c *config) GetUsersProfileConfig(tenantID string) (UsersProfileConfig, error) {
+	cfg := UsersProfileConfig{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/users_profile", url.QueryEscape(tenantID)), &cfg)
+	return cfg, err
 }
 
 // GetThemeText ...
@@ -281,20 +330,59 @@ func (c *config) GetPasswordRegex(tenantID string) (PasswordRegex, error) {
 	return regex, err
 }
 
-// GetEmailDispatcherSettings ...
-func (c *config) GetEmailDispatcherSettings(tenantID string) (EmailDispatcherSettings, error) {
-	settings := EmailDispatcherSettings{}
-	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/email_dispatcher", url.QueryEscape(tenantID)), &settings)
-	return settings, err
+// GetEmailDispatcherConfig ...
+func (c *config) GetEmailDispatcherConfig(tenantID string) (EmailDispatcherConfig, error) {
+	cfg := EmailDispatcherConfig{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/email_dispatcher", url.QueryEscape(tenantID)), &cfg)
+	return cfg, err
 }
 
-// GetAPMSettings ...
-func (c *config) GetAPMSettings(tenantID string) (APMSettings, error) {
-	settings := struct {
-		APM APMSettings `json:"advancedPasswordManagement"`
+// GetAPMConfig ...
+func (c *config) GetAPMConfig(tenantID string) (APMConfig, error) {
+	cfg := struct {
+		APM APMConfig `json:"advancedPasswordManagement"`
 	}{}
-	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/advanced_password_management", url.QueryEscape(tenantID)), &settings)
-	return settings.APM, err
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/advanced_password_management", url.QueryEscape(tenantID)), &cfg)
+	return cfg.APM, err
+}
+
+// GetAuditStatus ...
+func (c *config) GetAuditStatus(tenantID string) (AuditStatus, error) {
+	status := AuditStatus{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/capture_runtime_activity", url.QueryEscape(tenantID)), &status)
+	return status, err
+}
+
+// GetMFAChannels ...
+func (c *config) GetMFAChannels(tenantID string) ([]MFAChannel, error) {
+	response := struct {
+		Channels []MFAChannel `json:"channels"`
+	}{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/mfa/channels", url.QueryEscape(tenantID)), &response)
+	return response.Channels, err
+}
+
+// GetMFAChannel ...
+func (c *config) GetMFAChannel(tenantID string, provider string) (MFAChannel, error) {
+	channel := MFAChannel{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/mfa/channels/%s", url.QueryEscape(tenantID), url.QueryEscape(provider)), &channel)
+
+	return channel, err
+}
+
+// GetMFAExtension ...
+func (c *config) GetMFAExtension(tenantID string, name string) (MFAExtension, error) {
+	ext := MFAExtension{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/mfa/extensions/%s", url.QueryEscape(tenantID), url.QueryEscape(name)), &ext)
+
+	return ext, err
+}
+
+// GetMFAConfig ...
+func (c *config) GetMFAConfig(tenantID string) (MFAConfig, error) {
+	cfg := MFAConfig{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/mfa", url.QueryEscape(tenantID)), &cfg)
+	return cfg, err
 }
 
 // UpdateTokenConfig ...
