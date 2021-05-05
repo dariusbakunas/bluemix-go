@@ -18,6 +18,7 @@ const ErrCodeAPICreation = "APICreationError"
 type AppIDServiceAPI interface {
 	Applications() Applications
 	Config() Config
+	IDPS() IDPS
 	Roles() Roles
 }
 
@@ -74,4 +75,8 @@ func (a *appIDService) Roles() Roles {
 
 func (a *appIDService) Applications() Applications {
 	return newApplicationsAPI(a.Client)
+}
+
+func (a *appIDService) IDPS() IDPS {
+	return newIDPSAPI(a.Client)
 }
