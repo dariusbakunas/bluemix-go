@@ -197,8 +197,8 @@ type Config interface {
 	GetEmailTemplate(tenantID string, templateName string, language string) (EmailTemplate, error)
 	// GetMFAChannel returns a specific MFA channel registered with the App ID Instance, supported provider values: email, nexmo
 	GetMFAChannel(tenantID string, provider string) (MFAChannel, error)
-	// GetMFAChannels returns all MFA channels registered with the App ID Instance.
-	GetMFAChannels(tenantID string) ([]MFAChannel, error)
+	// ListMFAChannels returns all MFA channels registered with the App ID Instance.
+	ListMFAChannels(tenantID string) ([]MFAChannel, error)
 	// GetMFAExtension returns registered extension's configuration for an instance of App ID, supported names: premfa, postmfa
 	GetMFAExtension(tenantID string, name string) (MFAExtension, error)
 	// GetMFAConfig returns MFA configuration registered with the App ID Instance.
@@ -207,14 +207,14 @@ type Config interface {
 	GetPasswordRegex(tenantID string) (PasswordRegex, error)
 	// GetRateLimit returns the rate limit configuration registered with the App ID Instance.
 	GetRateLimit(tenantID string) (RateLimit, error)
-	// GetRedirectUris returns the list of the redirect URIs that can be used as callbacks of App ID authentication flow
-	GetRedirectUris(tenantID string) ([]string, error)
+	// ListRedirectUris returns the list of the redirect URIs that can be used as callbacks of App ID authentication flow
+	ListRedirectUris(tenantID string) ([]string, error)
 	// GetSAMLMetdata returns the SAML metadata required in order to integrate App ID with a SAML identity provider
 	GetSAMLMetadata(tenantID string) (string, error)
 	// GetSSOConfig returns SSO configuration registered with the App ID Instance
 	GetSSOConfig(tenantID string) (SSOConfig, error)
-	// GetTemplateLanguages returns the list of languages that can be used to customize email templates for Cloud Directory
-	GetTemplateLanguages(tenantID string) ([]string, error)
+	// ListTemplateLanguages returns the list of languages that can be used to customize email templates for Cloud Directory
+	ListTemplateLanguages(tenantID string) ([]string, error)
 	// GetThemeColors returns widget colors
 	GetThemeColors(tenantID string) (ThemeColors, error)
 	// GetThemeText returns widget texts
@@ -242,8 +242,8 @@ func (c *config) GetTokenConfig(tenantID string) (TokenConfig, error) {
 	return tokenConfig, err
 }
 
-// GetRedirectUris ...
-func (c *config) GetRedirectUris(tenantID string) ([]string, error) {
+// ListRedirectUris ...
+func (c *config) ListRedirectUris(tenantID string) ([]string, error) {
 	response := struct {
 		RedirectUris []string `json:"redirectUris"`
 	}{}
@@ -302,8 +302,8 @@ func (c *config) GetEmailTemplate(tenantID string, templateName string, language
 	return template, err
 }
 
-// GetTemplateLanguages ...
-func (c *config) GetTemplateLanguages(tenantID string) ([]string, error) {
+// ListTemplateLanguages ...
+func (c *config) ListTemplateLanguages(tenantID string) ([]string, error) {
 	response := struct {
 		Languages []string `json:"languages"`
 	}{}
@@ -369,7 +369,7 @@ func (c *config) GetAuditStatus(tenantID string) (AuditStatus, error) {
 }
 
 // GetMFAChannels ...
-func (c *config) GetMFAChannels(tenantID string) ([]MFAChannel, error) {
+func (c *config) ListMFAChannels(tenantID string) ([]MFAChannel, error) {
 	response := struct {
 		Channels []MFAChannel `json:"channels"`
 	}{}
