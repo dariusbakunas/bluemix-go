@@ -167,6 +167,17 @@ type MFAConfig struct {
 	IsActive bool `json:"isActive"`
 }
 
+type SSOConfig struct {
+	IsActive           bool     `json:"isActive"`
+	InactivityTimeout  int      `json:"inactivityTimeoutSeconds"`
+	LogoutRedirectURIs []string `json:"logoutRedirectUris"`
+}
+
+type RateLimit struct {
+	SignUpPerMinute int `json:"signUpLimitPerMinute"`
+	SignInPerMinute int `json:"signInLimitPerMinute"`
+}
+
 type config struct {
 	client *client.Client
 }
@@ -194,10 +205,14 @@ type Config interface {
 	GetMFAConfig(tenantID string) (MFAConfig, error)
 	// GetPasswordRegex returns the regular expression used by App ID for password strength validation
 	GetPasswordRegex(tenantID string) (PasswordRegex, error)
+	// GetRateLimit returns the rate limit configuration registered with the App ID Instance.
+	GetRateLimit(tenantID string) (RateLimit, error)
 	// GetRedirectUris returns the list of the redirect URIs that can be used as callbacks of App ID authentication flow
 	GetRedirectUris(tenantID string) ([]string, error)
 	// GetSAMLMetdata returns the SAML metadata required in order to integrate App ID with a SAML identity provider
 	GetSAMLMetadata(tenantID string) (string, error)
+	// GetSSOConfig returns SSO configuration registered with the App ID Instance
+	GetSSOConfig(tenantID string) (SSOConfig, error)
 	// GetTemplateLanguages returns the list of languages that can be used to customize email templates for Cloud Directory
 	GetTemplateLanguages(tenantID string) ([]string, error)
 	// GetThemeColors returns widget colors
@@ -383,6 +398,20 @@ func (c *config) GetMFAConfig(tenantID string) (MFAConfig, error) {
 	cfg := MFAConfig{}
 	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/mfa", url.QueryEscape(tenantID)), &cfg)
 	return cfg, err
+}
+
+// GetSSOConfig ...
+func (c *config) GetSSOConfig(tenantID string) (SSOConfig, error) {
+	cfg := SSOConfig{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/sso", url.QueryEscape(tenantID)), &cfg)
+	return cfg, err
+}
+
+// GetRateLimit ...
+func (c *config) GetRateLimit(tenantID string) (RateLimit, error) {
+	limit := RateLimit{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/rate_limit", url.QueryEscape(tenantID)), &limit)
+	return limit, err
 }
 
 // UpdateTokenConfig ...
