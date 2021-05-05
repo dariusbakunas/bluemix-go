@@ -9,7 +9,9 @@ import (
 
 type Roles interface {
 	// ListRoles returns a list of the roles that are associated with your registered application.
-	ListRoles(tenantID string) ([]Role, error)
+	List(tenantID string) ([]Role, error)
+	// Get by using the role ID, obtain the information for a specific role that is associated with a registered application.
+	Get(tenantID string, roleID string) (Role, error)
 }
 
 type roles struct {
@@ -31,11 +33,11 @@ type Role struct {
 	ID          string       `json:"id"`
 	Name        string       `json:"name"`
 	Description string       `json:"description,omitempty"`
-	Access      []RoleAccess `json:"access"`
+	Access      []RoleAccess `json:"access,omitempty"`
 }
 
 // ListRoles ...
-func (r *roles) ListRoles(tenantID string) ([]Role, error) {
+func (r *roles) List(tenantID string) ([]Role, error) {
 	response := struct {
 		Roles []Role `json:"roles"`
 	}{}
@@ -47,4 +49,11 @@ func (r *roles) ListRoles(tenantID string) ([]Role, error) {
 	}
 
 	return response.Roles, nil
+}
+
+func (r *roles) Get(tenantID string, roleID string) (Role, error) {
+	role := Role{}
+
+	_, err := r.client.Get(fmt.Sprintf("/management/v4/%s/roles/%s", url.QueryEscape(tenantID), url.QueryEscape(roleID)), &role)
+	return role, err
 }
