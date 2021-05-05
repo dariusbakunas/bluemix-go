@@ -48,11 +48,19 @@ type ThemeColors struct {
 	HeaderColor string `json:"headerColor"`
 }
 
+type EmailTemplate struct {
+	Subject       string `json:"subject"`
+	HTMLBody      string `json:"html_body,omitempty"`
+	B64Body       string `json:"base64_encoded_html_body,omitempty"`
+	PlainTextBody string `json:"plain_text_body,omitempty"`
+}
+
 type config struct {
 	client *client.Client
 }
 
 type Config interface {
+	GetEmailTemplate(tenantID string, templateName string, language string) (EmailTemplate, error)
 	GetRedirectUris(tenantID string) ([]string, error)
 	GetSAMLMetadata(tenantID string) (string, error)
 	GetThemeColors(tenantID string) (ThemeColors, error)
@@ -127,6 +135,13 @@ func (c *config) GetSAMLMetadata(tenantID string) (string, error) {
 	var buf bytes.Buffer
 	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/saml_metadata", url.QueryEscape(tenantID)), &buf)
 	return buf.String(), err
+}
+
+// GetEmailTemplate returns the content of a custom email template or the default template in case it wasn't customized
+func (c *config) GetEmailTemplate(tenantID string, templateName string, language string) (EmailTemplate, error) {
+	template := EmailTemplate{}
+	_, err := c.client.Get(fmt.Sprintf("/management/v4/%s/config/cloud_directory/templates/%s/%s", url.QueryEscape(tenantID), url.QueryEscape(templateName), url.QueryEscape(language)), &template)
+	return template, err
 }
 
 // UpdateTokenConfig updates the token configuration
