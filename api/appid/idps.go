@@ -18,6 +18,14 @@ type IDPS interface {
 	GetGoogleIDP(tenantID string) (GenericIDP, error)
 	// GetSAMLIDP returns the SAML identity provider configuration, including status and credentials.
 	GetSAMLIDP(tenantID string) (SAMLIDP, error)
+	// UpdateFacebookIDP update Facebook IDP configuration
+	UpdateFacebookIDP(tenantID string, cfg GenericIDP) (GenericIDP, error)
+	// UpdateGoogleIDP update Google IDP configuration
+	UpdateGoogleIDP(tenantID string, cfg GenericIDP) (GenericIDP, error)
+	// Update update custom IDP configuration
+	UpdateCustomIDP(tenantID string, cfg CustomIDP) (CustomIDP, error)
+	// Update SAML IDP configuration
+	UpdateSAMLIDP(tenantID string, cfg SAMLIDP) (SAMLIDP, error)
 }
 
 type idps struct {
@@ -103,11 +111,27 @@ func (i *idps) GetFacebookIDP(tenantID string) (GenericIDP, error) {
 	return fb, err
 }
 
+// UpdateFacebookIDP ...
+func (i *idps) UpdateFacebookIDP(tenantID string, cfg GenericIDP) (GenericIDP, error) {
+	response := GenericIDP{}
+
+	_, err := i.client.Put(fmt.Sprintf("/management/v4/%s/config/idps/facebook", url.QueryEscape(tenantID)), cfg, &response)
+	return response, err
+}
+
 // GetGoogleIDP ...
 func (i *idps) GetGoogleIDP(tenantID string) (GenericIDP, error) {
 	google := GenericIDP{}
 	_, err := i.client.Get(fmt.Sprintf("/management/v4/%s/config/idps/google", url.QueryEscape(tenantID)), &google)
 	return google, err
+}
+
+// UpdateFacebookIDP ...
+func (i *idps) UpdateGoogleIDP(tenantID string, cfg GenericIDP) (GenericIDP, error) {
+	response := GenericIDP{}
+
+	_, err := i.client.Put(fmt.Sprintf("/management/v4/%s/config/idps/google", url.QueryEscape(tenantID)), cfg, &response)
+	return response, err
 }
 
 // GetSAMLIDP ...
@@ -117,16 +141,32 @@ func (i *idps) GetSAMLIDP(tenantID string) (SAMLIDP, error) {
 	return saml, err
 }
 
-// GetCloudDirectoryIDP
+// GetCloudDirectoryIDP ...
 func (i *idps) GetCloudDirectoryIDP(tenantID string) (CloudDirectoryIDP, error) {
 	cd := CloudDirectoryIDP{}
 	_, err := i.client.Get(fmt.Sprintf("/management/v4/%s/config/idps/cloud_directory", url.QueryEscape(tenantID)), &cd)
 	return cd, err
 }
 
-// GetCustomIDP
+// GetCustomIDP ...
 func (i *idps) GetCustomIDP(tenantID string) (CustomIDP, error) {
 	custom := CustomIDP{}
 	_, err := i.client.Get(fmt.Sprintf("/management/v4/%s/config/idps/custom", url.QueryEscape(tenantID)), &custom)
 	return custom, err
+}
+
+// UpdateCustomIDP ...
+func (i *idps) UpdateCustomIDP(tenantID string, cfg CustomIDP) (CustomIDP, error) {
+	response := CustomIDP{}
+
+	_, err := i.client.Put(fmt.Sprintf("/management/v4/%s/config/idps/custom", url.QueryEscape(tenantID)), cfg, &response)
+	return response, err
+}
+
+// UpdateSAMLIDP ...
+func (i *idps) UpdateSAMLIDP(tenantID string, cfg SAMLIDP) (SAMLIDP, error) {
+	response := SAMLIDP{}
+
+	_, err := i.client.Put(fmt.Sprintf("/management/v4/%s/config/idps/saml", url.QueryEscape(tenantID)), cfg, &response)
+	return response, err
 }

@@ -16,9 +16,13 @@ const ErrCodeAPICreation = "APICreationError"
 
 // AppIDServiceAPI is the IBM AppID client
 type AppIDServiceAPI interface {
+	// Applictions AppID management API for applications
 	Applications() Applications
+	// Config AppID management API for general configuration
 	Config() Config
+	// IDPS AppID management API for Identity Providers
 	IDPS() IDPS
+	// Roles AppID management API for roles
 	Roles() Roles
 }
 
