@@ -18,6 +18,8 @@ const ErrCodeAPICreation = "APICreationError"
 type AppIDServiceAPI interface {
 	// Applictions AppID management API for applications
 	Applications() Applications
+	// CloudDirectoryUsers AppID management API for cloud directory users
+	CloudDirectoryUsers() CloudDirectoryUsers
 	// Config AppID management API for general configuration
 	Config() Config
 	// IDPS AppID management API for Identity Providers
@@ -83,4 +85,8 @@ func (a *appIDService) Applications() Applications {
 
 func (a *appIDService) IDPS() IDPS {
 	return newIDPSAPI(a.Client)
+}
+
+func (a *appIDService) CloudDirectoryUsers() CloudDirectoryUsers {
+	return newCloudDirectoryUsersAPI(a.Client)
 }
